@@ -1,0 +1,10 @@
+{
+  "name": "sisu-xlsx-reader",
+  "version": "1.0.0",
+  "description": "Reusable module to read .xlsx files",
+  "main": "xlsx-reader.js",
+  "type": "module",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
