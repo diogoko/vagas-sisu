@@ -73,7 +73,7 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center p-8">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">SISU Vacancy Finder</h2>
+          <h2 className="text-xl font-semibold mb-2">Vagas SISU</h2>
           <p className="text-muted-foreground">Carregando dados...</p>
           <div className="w-48 h-2 bg-muted rounded-full mt-4 mx-auto overflow-hidden">
             <div
@@ -111,7 +111,7 @@ function App() {
       <header className="sticky top-0 z-20 bg-background border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">SISU Vacancy Finder</h1>
+            <h1 className="text-xl font-bold">Vagas SISU</h1>
             {isLoading && (
               <span className="text-sm text-muted-foreground animate-pulse">
                 Carregando mais dados...
