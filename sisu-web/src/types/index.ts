@@ -19,7 +19,7 @@ export const SCORE_LABELS: Record<ScoreKey, string> = {
   cienciasNatureza: 'Ciencias da Natureza',
 }
 
-// Lookup table types (from web-data/lookups.json)
+// Lookup table types (from public/data/lookups.json)
 export interface Institution {
   s: string  // Short name (sigla)
   n: string  // Full name
@@ -44,7 +44,7 @@ export interface Lookups {
   municipios: Municipality[]
 }
 
-// Vacancy record (from web-data/vagas-*.json)
+// Vacancy record (from public/data/vagas-*.json)
 export interface Vacancy {
   i: number     // Institution index
   l: number     // Location (municipality) index

@@ -148,7 +148,7 @@ for (const v of vagas) {
 }
 
 // Create output directory
-mkdirSync('web-data', { recursive: true });
+mkdirSync('sisu-web/public/data', { recursive: true });
 
 // Save lookup tables
 const lookups = {
@@ -156,12 +156,12 @@ const lookups = {
   cursos: cursoListWithNorm,
   municipios: munList
 };
-writeFileSync('web-data/lookups.json', JSON.stringify(lookups));
+writeFileSync('sisu-web/public/data/lookups.json', JSON.stringify(lookups));
 console.log(`Lookups: ${(JSON.stringify(lookups).length / 1024).toFixed(1)} KB`);
 
 // Save vacancies (compact JSON)
 const vagasJson = JSON.stringify(optimizedVagas);
-writeFileSync('web-data/vagas.json', vagasJson);
+writeFileSync('sisu-web/public/data/vagas.json', vagasJson);
 console.log(`Vagas: ${(vagasJson.length / 1024 / 1024).toFixed(2)} MB`);
 
 // Also create chunked version (5k records each)
@@ -170,7 +170,7 @@ const chunks = [];
 for (let i = 0; i < optimizedVagas.length; i += CHUNK_SIZE) {
   const chunk = optimizedVagas.slice(i, i + CHUNK_SIZE);
   const chunkIndex = Math.floor(i / CHUNK_SIZE);
-  writeFileSync(`web-data/vagas-${chunkIndex}.json`, JSON.stringify(chunk));
+  writeFileSync(`sisu-web/public/data/vagas-${chunkIndex}.json`, JSON.stringify(chunk));
   chunks.push(chunk.length);
 }
 console.log(`Created ${chunks.length} chunks: ${chunks.join(', ')} records each`);
