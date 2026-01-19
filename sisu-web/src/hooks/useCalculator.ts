@@ -23,6 +23,7 @@ export function useCalculator(): UseCalculatorReturn {
   const [matchingCount, setMatchingCount] = useState(0)
   const workerRef = useRef<Worker | null>(null)
   const pendingCalculation = useRef<WorkerRequest['payload'] | null>(null)
+  const isCalculatingRef = useRef(false)
 
   useEffect(() => {
     // Create worker
@@ -36,23 +37,26 @@ export function useCalculator(): UseCalculatorReturn {
         setResults(event.data.payload.results)
         setTotalCount(event.data.payload.totalCount)
         setMatchingCount(event.data.payload.matchingCount)
+        isCalculatingRef.current = false
         setIsCalculating(false)
 
         // Process any pending calculation
         if (pendingCalculation.current) {
           const pending = pendingCalculation.current
           pendingCalculation.current = null
+          isCalculatingRef.current = true
+          setIsCalculating(true)
           workerRef.current?.postMessage({
             type: 'calculate',
             payload: pending,
           } as WorkerRequest)
-          setIsCalculating(true)
         }
       }
     }
 
     workerRef.current.onerror = (error) => {
       console.error('Worker error:', error)
+      isCalculatingRef.current = false
       setIsCalculating(false)
     }
 
@@ -72,17 +76,18 @@ export function useCalculator(): UseCalculatorReturn {
 
     const payload = { scores, filters, vacancies, lookups, sortBy }
 
-    if (isCalculating) {
+    if (isCalculatingRef.current) {
       // Queue the calculation for when current one finishes
       pendingCalculation.current = payload
     } else {
+      isCalculatingRef.current = true
+      setIsCalculating(true)
       workerRef.current.postMessage({
         type: 'calculate',
         payload,
       } as WorkerRequest)
-      setIsCalculating(true)
     }
-  }, [isCalculating])
+  }, []) // No dependencies - uses refs instead
 
   return {
     results,
