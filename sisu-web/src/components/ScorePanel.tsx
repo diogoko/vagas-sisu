@@ -12,11 +12,11 @@ interface ScorePanelProps {
 }
 
 const SCORE_KEYS: ScoreKey[] = [
-  'redacao',
   'linguagens',
-  'matematica',
   'cienciasHumanas',
   'cienciasNatureza',
+  'matematica',
+  'redacao',
 ]
 
 export function ScorePanel({
