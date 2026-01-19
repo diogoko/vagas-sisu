@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Input } from './ui/input'
 import { cn } from '../lib/utils'
 
@@ -12,6 +12,11 @@ interface ScoreInputProps {
 export function ScoreInput({ label, value, onChange, placeholder = '0-1000' }: ScoreInputProps) {
   const [inputValue, setInputValue] = useState(value?.toString() ?? '')
   const [isValid, setIsValid] = useState(true)
+
+  // Sync internal state when prop changes (e.g., from localStorage load)
+  useEffect(() => {
+    setInputValue(value?.toString() ?? '')
+  }, [value])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value

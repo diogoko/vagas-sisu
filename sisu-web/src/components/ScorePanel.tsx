@@ -53,9 +53,10 @@ export function ScorePanel({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Save scores when they change and saving is enabled
+  // Save scores when they change and saving is enabled (only if there are real scores)
   useEffect(() => {
-    if (saveEnabled) {
+    const hasAnyScore = Object.values(scores).some(v => v !== null)
+    if (saveEnabled && hasAnyScore) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(scores))
       } catch {
