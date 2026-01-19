@@ -1,8 +1,11 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ScoreInput } from './ScoreInput'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import type { Scores, ScoreKey } from '../types'
 import { SCORE_LABELS } from '../types'
+
+const STORAGE_KEY = 'sisu-enem-scores'
+const STORAGE_ENABLED_KEY = 'sisu-save-scores-enabled'
 
 interface ScorePanelProps {
   scores: Scores
@@ -25,9 +28,64 @@ export function ScorePanel({
   collapsed = false,
   onToggleCollapse,
 }: ScorePanelProps) {
+  const [saveEnabled, setSaveEnabled] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_ENABLED_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  // Load saved scores on mount if saving is enabled
+  useEffect(() => {
+    if (saveEnabled) {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          onScoresChange(parsed)
+        }
+      } catch {
+        // Ignore errors
+      }
+    }
+  // Only run on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Save scores when they change and saving is enabled
+  useEffect(() => {
+    if (saveEnabled) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(scores))
+      } catch {
+        // Ignore errors
+      }
+    }
+  }, [scores, saveEnabled])
+
   const handleScoreChange = useCallback((key: ScoreKey, value: number | null) => {
     onScoresChange({ ...scores, [key]: value })
   }, [scores, onScoresChange])
+
+  const handleToggleSave = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card collapse
+    setSaveEnabled(prev => {
+      const newValue = !prev
+      try {
+        if (newValue) {
+          localStorage.setItem(STORAGE_ENABLED_KEY, 'true')
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(scores))
+        } else {
+          localStorage.removeItem(STORAGE_ENABLED_KEY)
+          localStorage.removeItem(STORAGE_KEY)
+        }
+      } catch {
+        // Ignore errors
+      }
+      return newValue
+    })
+  }, [scores])
 
   const filledCount = Object.values(scores).filter(v => v !== null).length
   const isComplete = filledCount === 5
@@ -87,6 +145,30 @@ export function ScorePanel({
                 onChange={(value) => handleScoreChange(key, value)}
               />
             ))}
+          </div>
+
+          {/* Save toggle */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <label htmlFor="save-scores" className="text-sm text-muted-foreground">
+              Salvar notas no navegador
+            </label>
+            <button
+              id="save-scores"
+              role="switch"
+              aria-checked={saveEnabled}
+              onClick={handleToggleSave}
+              className={`
+                relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                ${saveEnabled ? 'bg-primary' : 'bg-muted'}
+              `}
+            >
+              <span
+                className={`
+                  inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                  ${saveEnabled ? 'translate-x-6' : 'translate-x-1'}
+                `}
+              />
+            </button>
           </div>
         </CardContent>
       )}
