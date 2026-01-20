@@ -30,9 +30,11 @@ export function ScorePanel({
 }: ScorePanelProps) {
   const [saveEnabled, setSaveEnabled] = useState(() => {
     try {
-      return localStorage.getItem(STORAGE_ENABLED_KEY) === 'true'
+      const saved = localStorage.getItem(STORAGE_ENABLED_KEY)
+      // Default to true if no preference saved
+      return saved !== 'false'
     } catch {
-      return false
+      return true
     }
   })
 
