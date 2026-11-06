@@ -1,14 +1,67 @@
 import * as XLSX from 'xlsx';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
+
+// ============ INPUT VALIDATION ============
+
+/**
+ * Custom error class for file-related errors
+ */
+export class FileError extends Error {
+  constructor(message, filePath = null) {
+    super(message);
+    this.name = 'FileError';
+    this.filePath = filePath;
+  }
+}
+
+/**
+ * Validates that a file path is valid and the file exists
+ * @param {any} filePath - File path to validate
+ * @param {string[]} [allowedExtensions=['.xlsx', '.xls']] - Allowed file extensions
+ * @returns {string} Validated file path
+ * @throws {FileError} If validation fails
+ */
+export function validateFilePath(filePath, allowedExtensions = ['.xlsx', '.xls']) {
+  if (filePath === undefined || filePath === null) {
+    throw new FileError('File path is required');
+  }
+  if (typeof filePath !== 'string') {
+    throw new FileError(`File path must be a string, got: ${typeof filePath}`);
+  }
+  if (filePath.trim() === '') {
+    throw new FileError('File path cannot be empty');
+  }
+
+  // Check extension
+  const lowerPath = filePath.toLowerCase();
+  const hasValidExtension = allowedExtensions.some(ext => lowerPath.endsWith(ext.toLowerCase()));
+  if (!hasValidExtension) {
+    throw new FileError(`File must have one of these extensions: ${allowedExtensions.join(', ')}. Got: ${filePath}`, filePath);
+  }
+
+  // Check if file exists
+  if (!existsSync(filePath)) {
+    throw new FileError(`File not found: ${filePath}`, filePath);
+  }
+
+  return filePath;
+}
 
 /**
  * Reads an xlsx file and returns the workbook object
  * @param {string} filePath - Path to the .xlsx file
  * @returns {XLSX.WorkBook} The workbook object
+ * @throws {FileError} If file path is invalid or file cannot be read
  */
 export function readWorkbook(filePath) {
-  const buffer = readFileSync(filePath);
-  return XLSX.read(buffer, { type: 'buffer' });
+  const validPath = validateFilePath(filePath);
+  try {
+    const buffer = readFileSync(validPath);
+    return XLSX.read(buffer, { type: 'buffer' });
+  } catch (error) {
+    if (error instanceof FileError) throw error;
+    throw new FileError(`Failed to read xlsx file: ${error.message}`, filePath);
+  }
 }
 
 /**

@@ -3,6 +3,112 @@ import {
   loadVagas
 } from './sisu-data.js';
 
+// ============ INPUT VALIDATION ============
+
+/**
+ * Custom error class for validation errors
+ */
+export class ValidationError extends Error {
+  constructor(message, field = null) {
+    super(message);
+    this.name = 'ValidationError';
+    this.field = field;
+  }
+}
+
+/**
+ * Validates that a value is a number within a specified range
+ * @param {any} value - Value to validate
+ * @param {string} name - Name of the field (for error messages)
+ * @param {number} min - Minimum allowed value
+ * @param {number} max - Maximum allowed value
+ * @returns {number} The validated number
+ * @throws {ValidationError} If validation fails
+ */
+function validateNumberInRange(value, name, min, max) {
+  if (value === undefined || value === null) {
+    throw new ValidationError(`${name} is required`, name);
+  }
+  if (typeof value !== 'number' && (typeof value !== 'string' || value.trim() === '')) {
+    throw new ValidationError(`${name} must be a number, got: ${typeof value}`, name);
+  }
+  const num = Number(value);
+  if (!Number.isFinite(num)) {
+    throw new ValidationError(`${name} must be a finite number, got: ${value}`, name);
+  }
+  if (num < min || num > max) {
+    throw new ValidationError(`${name} must be between ${min} and ${max}, got: ${num}`, name);
+  }
+  return num;
+}
+
+/**
+ * Validates ENEM scores object
+ * @param {Object} scores - Scores object to validate
+ * @returns {EnemScores} Validated scores object
+ * @throws {ValidationError} If validation fails
+ */
+export function validateEnemScores(scores) {
+  if (!scores || typeof scores !== 'object') {
+    throw new ValidationError('scores must be an object');
+  }
+
+  const MIN_SCORE = 0;
+  const MAX_SCORE = 1000;
+
+  return {
+    redacao: validateNumberInRange(scores.redacao, 'redacao', MIN_SCORE, MAX_SCORE),
+    linguagens: validateNumberInRange(scores.linguagens, 'linguagens', MIN_SCORE, MAX_SCORE),
+    matematica: validateNumberInRange(scores.matematica, 'matematica', MIN_SCORE, MAX_SCORE),
+    cienciasHumanas: validateNumberInRange(scores.cienciasHumanas, 'cienciasHumanas', MIN_SCORE, MAX_SCORE),
+    cienciasNatureza: validateNumberInRange(scores.cienciasNatureza, 'cienciasNatureza', MIN_SCORE, MAX_SCORE)
+  };
+}
+
+/**
+ * Validates search filters object
+ * @param {Object} filters - Filters object to validate
+ * @returns {SearchFilters} Validated filters object
+ * @throws {ValidationError} If validation fails
+ */
+export function validateFilters(filters) {
+  if (filters === undefined || filters === null) {
+    return {};
+  }
+  if (typeof filters !== 'object' || Array.isArray(filters)) {
+    throw new ValidationError('filters must be an object');
+  }
+
+  const validModalidades = ['A', 'L', 'V', 'B'];
+
+  const validated = {};
+
+  // Validate array fields
+  const arrayFields = ['ufs', 'municipios', 'cursos', 'instituicoes', 'modalidades', 'tiposConcorrencia', 'graus', 'turnos'];
+  for (const field of arrayFields) {
+    if (filters[field] !== undefined) {
+      if (!Array.isArray(filters[field])) {
+        throw new ValidationError(`filters.${field} must be an array`, field);
+      }
+      if (!filters[field].every(v => typeof v === 'string')) {
+        throw new ValidationError(`filters.${field} must contain only strings`, field);
+      }
+      validated[field] = filters[field];
+    }
+  }
+
+  // Validate enum values
+  if (validated.modalidades) {
+    for (const m of validated.modalidades) {
+      if (!validModalidades.includes(m)) {
+        throw new ValidationError(`Invalid modalidade: "${m}". Valid values: ${validModalidades.join(', ')}`, 'modalidades');
+      }
+    }
+  }
+
+  return validated;
+}
+
 /**
  * @typedef {Object} EnemScores
  * @property {number} redacao - Essay score (0-1000)
@@ -238,8 +344,13 @@ function matchesExactFilter(value, filters) {
  * @param {SearchFilters} [filters={}] - Search filters
  * @param {SearchOptions} [options={}] - Search options
  * @returns {VacancyMatch[]} Array of matching vacancies with calculated scores
+ * @throws {ValidationError} If scores or filters are invalid
  */
 export function buscarVagas(scores, filters = {}, options = {}) {
+  // Validate inputs
+  const validatedScores = validateEnemScores(scores);
+  const validatedFilters = validateFilters(filters);
+
   const {
     marginPercent = -100,  // Default: show all, even below cut-off
     includeNoScore = false,
@@ -252,28 +363,28 @@ export function buscarVagas(scores, filters = {}, options = {}) {
   const results = [];
 
   for (const vaga of data) {
-    // Apply filters
-    if (!matchesExactFilter(vaga.campus.uf, filters.ufs)) continue;
-    if (!matchesTextFilter(vaga.campus.municipio, filters.municipios)) continue;
-    if (!matchesTextFilter(vaga.curso.nome, filters.cursos)) continue;
-    if (!matchesTextFilter(vaga.instituicao.nome, filters.instituicoes) &&
-        !matchesTextFilter(vaga.instituicao.sigla, filters.instituicoes)) continue;
-    if (!matchesExactFilter(vaga.modalidade.tipo, filters.modalidades)) continue;
-    if (filters.tiposConcorrencia && filters.tiposConcorrencia.length > 0) {
+    // Apply filters (using validated filters)
+    if (!matchesExactFilter(vaga.campus.uf, validatedFilters.ufs)) continue;
+    if (!matchesTextFilter(vaga.campus.municipio, validatedFilters.municipios)) continue;
+    if (!matchesTextFilter(vaga.curso.nome, validatedFilters.cursos)) continue;
+    if (!matchesTextFilter(vaga.instituicao.nome, validatedFilters.instituicoes) &&
+        !matchesTextFilter(vaga.instituicao.sigla, validatedFilters.instituicoes)) continue;
+    if (!matchesExactFilter(vaga.modalidade.tipo, validatedFilters.modalidades)) continue;
+    if (validatedFilters.tiposConcorrencia && validatedFilters.tiposConcorrencia.length > 0) {
       const tipoConc = vaga.modalidade.tipoConcorrencia.trim();
-      if (!filters.tiposConcorrencia.some(f => tipoConc.startsWith(f.trim()))) continue;
+      if (!validatedFilters.tiposConcorrencia.some(f => tipoConc.startsWith(f.trim()))) continue;
     }
-    if (!matchesExactFilter(vaga.curso.grau, filters.graus)) continue;
-    if (!matchesExactFilter(vaga.curso.turno, filters.turnos)) continue;
+    if (!matchesExactFilter(vaga.curso.grau, validatedFilters.graus)) continue;
+    if (!matchesExactFilter(vaga.curso.turno, validatedFilters.turnos)) continue;
 
     // Skip vacancies without cut-off score unless explicitly included
     if (vaga.notaCorte === 0 && !includeNoScore) continue;
 
-    // Calculate weighted score
-    const notaCalculada = calcularNotaPonderada(scores, vaga.pesosNotas);
+    // Calculate weighted score (using validated scores)
+    const notaCalculada = calcularNotaPonderada(validatedScores, vaga.pesosNotas);
 
     // Check minimum scores
-    const verificacao = verificarNotasMinimas(scores, vaga.pesosNotas);
+    const verificacao = verificarNotasMinimas(validatedScores, vaga.pesosNotas);
     const atendeMinimos = verificacao.aprovado;
 
     // Calculate margin

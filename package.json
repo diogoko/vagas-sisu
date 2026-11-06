@@ -1,9 +1,18 @@
 {
   "name": "sisu-xlsx-reader",
   "version": "1.0.0",
-  "description": "Reusable module to read .xlsx files",
+  "description": "SISU vacancy search tool for Brazilian students",
   "main": "xlsx-reader.js",
   "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:search": "node --test test/sisu-search.test.js",
+    "test:data": "node --test test/sisu-data.test.js",
+    "test:xlsx": "node --test test/xlsx-reader.test.js",
+    "test:validation": "node validation-tests.js",
+    "test:external": "node validation-compare-external.js",
+    "test:all": "npm run test && npm run test:validation && npm run test:external"
+  },
   "dependencies": {
     "xlsx": "^0.18.5"
   }

@@ -1,6 +1,35 @@
 import { getSheetContent, getSheetInfo } from './xlsx-reader.js';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 
+// ============ INPUT VALIDATION ============
+
+/**
+ * Custom error class for data-related errors
+ */
+export class DataError extends Error {
+  constructor(message, details = null) {
+    super(message);
+    this.name = 'DataError';
+    this.details = details;
+  }
+}
+
+/**
+ * Validates that a JSON file path is a non-empty string with a .json extension
+ * @param {string} jsonPath - Path to JSON file
+ * @returns {string} Validated path
+ * @throws {DataError} If validation fails
+ */
+function validateJsonPath(jsonPath) {
+  if (typeof jsonPath !== 'string' || jsonPath.trim() === '') {
+    throw new DataError('JSON file path must be a non-empty string');
+  }
+  if (!jsonPath.toLowerCase().endsWith('.json')) {
+    throw new DataError(`File must be a JSON file: ${jsonPath}`);
+  }
+  return jsonPath;
+}
+
 // File paths
 const INSCRICOES_FILE = 'portal-sisu-2025-inscricoes-e-nota-de-corte.xlsx';
 const VAGAS_FILE = 'portal-sisu-2025-vagas-ofertadas.xlsx';
@@ -533,22 +562,48 @@ export function exportToSeparateJsonFiles(inscricoesPath = INSCRICOES_JSON, vaga
  * Loads inscriptions data from JSON file (faster than xlsx)
  * @param {string} [jsonPath] - JSON file path (default: sisu-inscricoes-nota-corte.json)
  * @returns {InscricaoNotaCorte[]} Array of inscription records
+ * @throws {DataError} If file cannot be read or parsed
  */
 export function loadInscricoesFromJson(jsonPath = INSCRICOES_JSON) {
-  const content = readFileSync(jsonPath, 'utf-8');
-  const parsed = JSON.parse(content);
-  return parsed.data;
+  validateJsonPath(jsonPath);
+  if (!existsSync(jsonPath)) {
+    throw new DataError(`JSON file not found: ${jsonPath}. Run exportToSeparateJsonFiles() first.`);
+  }
+  try {
+    const content = readFileSync(jsonPath, 'utf-8');
+    const parsed = JSON.parse(content);
+    if (!parsed.data || !Array.isArray(parsed.data)) {
+      throw new DataError(`Invalid JSON structure: expected { data: [...] }`);
+    }
+    return parsed.data;
+  } catch (error) {
+    if (error instanceof DataError) throw error;
+    throw new DataError(`Failed to load inscricoes from JSON: ${error.message}`);
+  }
 }
 
 /**
  * Loads vacancies data from JSON file (faster than xlsx)
  * @param {string} [jsonPath] - JSON file path (default: sisu-vagas-ofertadas.json)
  * @returns {VagaOfertada[]} Array of vacancy records
+ * @throws {DataError} If file cannot be read or parsed
  */
 export function loadVagasFromJson(jsonPath = VAGAS_JSON) {
-  const content = readFileSync(jsonPath, 'utf-8');
-  const parsed = JSON.parse(content);
-  return parsed.data;
+  validateJsonPath(jsonPath);
+  if (!existsSync(jsonPath)) {
+    throw new DataError(`JSON file not found: ${jsonPath}. Run exportToSeparateJsonFiles() first.`);
+  }
+  try {
+    const content = readFileSync(jsonPath, 'utf-8');
+    const parsed = JSON.parse(content);
+    if (!parsed.data || !Array.isArray(parsed.data)) {
+      throw new DataError(`Invalid JSON structure: expected { data: [...] }`);
+    }
+    return parsed.data;
+  } catch (error) {
+    if (error instanceof DataError) throw error;
+    throw new DataError(`Failed to load vagas from JSON: ${error.message}`);
+  }
 }
 
 /**
