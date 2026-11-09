@@ -197,7 +197,7 @@ function App() {
       <footer className="border-t mt-8 py-4">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>
-            Dados baseados no SISU 2025. Esta ferramenta e apenas informativa.
+            Dados baseados no SISU 2026. Esta ferramenta e apenas informativa.
           </p>
           <p className="mt-1">
             Verifique sempre as informacoes oficiais em{' '}

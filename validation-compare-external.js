@@ -11,6 +11,7 @@ const RESET = '\x1b[0m';
 const BOLD = '\x1b[1m';
 
 // External data from VestibulandoWeb (SISU 2025)
+// STALE: reference values are 2025; not valid against 2026 data, so excluded from test:all until refreshed
 const externalData = {
   UFRJ: [
     { curso: 'MEDICINA', turno: 'Integral', notaCorte: 823.79, campus: 'Cidade Universitária' },

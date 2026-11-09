@@ -16,13 +16,13 @@ This project helps Brazilian students find university vacancies through SISU (Si
 
 ## Data Sources
 
-Two xlsx files from the official SISU portal (2025 edition), downloaded from:
+Two xlsx files from the official SISU portal (2026 edition), downloaded from:
 https://sisu.mec.gov.br/#/relatorio#onepage
 
-1. **portal-sisu-2025-inscricoes-e-nota-de-corte.xlsx** - Inscriptions and cut-off scores
+1. **portal-sisu-2026-inscricoes-e-nota-de-corte.xlsx** - Inscriptions and cut-off scores
    - Contains: cut-off scores, number of applications per vacancy
 
-2. **portal-sisu-2025-vagas-ofertadas.xlsx** - Offered vacancies
+2. **portal-sisu-2026-vagas-ofertadas.xlsx** - Offered vacancies
    - Contains: ENEM weights, minimum scores, vacancy counts, institution details
 
 ## Project Structure
@@ -113,5 +113,5 @@ node -e "import { exportToSeparateJsonFiles } from './sisu-data.js'; exportToSep
 
 # Run tests
 npm test          # unit tests (node --test test/*.test.js)
-npm run test:all # unit + validation + external comparison
+npm run test:all # unit + validation (test:external holds 2025 reference data, so it is not included)
 ```

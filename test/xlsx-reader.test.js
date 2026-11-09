@@ -18,7 +18,7 @@ import {
 } from '../xlsx-reader.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const VALID_XLSX = join(__dirname, '..', 'portal-sisu-2025-vagas-ofertadas.xlsx');
+const VALID_XLSX = join(__dirname, '..', 'portal-sisu-2026-vagas-ofertadas.xlsx');
 
 // ============================================
 // Input Validation Tests

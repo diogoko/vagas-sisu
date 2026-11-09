@@ -31,8 +31,10 @@ function validateJsonPath(jsonPath) {
 }
 
 // File paths
-const INSCRICOES_FILE = 'portal-sisu-2025-inscricoes-e-nota-de-corte.xlsx';
-const VAGAS_FILE = 'portal-sisu-2025-vagas-ofertadas.xlsx';
+// SISU edition year: change this (and drop the new xlsx files in the repo root) to update the data
+export const SISU_YEAR = 2026;
+const INSCRICOES_FILE = `portal-sisu-${SISU_YEAR}-inscricoes-e-nota-de-corte.xlsx`;
+const VAGAS_FILE = `portal-sisu-${SISU_YEAR}-vagas-ofertadas.xlsx`;
 
 // Default JSON output paths
 const INSCRICOES_JSON = 'sisu-inscricoes-nota-corte.json';
@@ -154,7 +156,7 @@ function trimString(value) {
 
 /**
  * Loads inscriptions and cut-off scores data
- * @param {string} [filePath] - Path to the xlsx file (default: portal-sisu-2025-inscricoes-e-nota-de-corte.xlsx)
+ * @param {string} [filePath] - Path to the xlsx file (default: portal-sisu-<SISU_YEAR>-inscricoes-e-nota-de-corte.xlsx)
  * @returns {InscricaoNotaCorte[]} Array of inscription records
  */
 export function loadInscricoesNotaCorte(filePath = INSCRICOES_FILE) {
@@ -195,7 +197,7 @@ export function loadInscricoesNotaCorte(filePath = INSCRICOES_FILE) {
 
 /**
  * Loads offered vacancies data
- * @param {string} [filePath] - Path to the xlsx file (default: portal-sisu-2025-vagas-ofertadas.xlsx)
+ * @param {string} [filePath] - Path to the xlsx file (default: portal-sisu-<SISU_YEAR>-vagas-ofertadas.xlsx)
  * @returns {VagaOfertada[]} Array of vacancy records
  */
 export function loadVagasOfertadas(filePath = VAGAS_FILE) {

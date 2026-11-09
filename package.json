@@ -11,7 +11,7 @@
     "test:xlsx": "node --test test/xlsx-reader.test.js",
     "test:validation": "node validation-tests.js",
     "test:external": "node validation-compare-external.js",
-    "test:all": "npm run test && npm run test:validation && npm run test:external"
+    "test:all": "npm run test && npm run test:validation"
   },
   "dependencies": {
     "xlsx": "^0.18.5"
