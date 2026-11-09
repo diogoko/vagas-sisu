@@ -1,3 +1,5 @@
 node_modules
 *.xlsx
 test-*.js
+sisu-inscricoes-nota-corte.json
+sisu-vagas-ofertadas.json
